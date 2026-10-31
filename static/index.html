@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Steady</title>
+<style>
+:root{
+  --bg:#f6f4ef; --card:#ffffff; --ink:#26292b; --muted:#5d6468; --line:#d9d5cb;
+  --accent:#3d6b63; --accent-ink:#ffffff; --warn-bg:#fff3d6; --warn-line:#d9b45a; --crisis-bg:#fde8e6; --crisis-line:#c0554b;
+  --fs:18px;
+}
+:root[data-theme="dark"]{
+  --bg:#1c2022; --card:#262b2e; --ink:#e8e6e1; --muted:#a4abae; --line:#3b4246;
+  --accent:#7fb5ab; --accent-ink:#13201d; --warn-bg:#3a3220; --warn-line:#8a7336; --crisis-bg:#3d2422; --crisis-line:#c0554b;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c2022; --card:#262b2e; --ink:#e8e6e1; --muted:#a4abae; --line:#3b4246;
+    --accent:#7fb5ab; --accent-ink:#13201d; --warn-bg:#3a3220; --warn-line:#8a7336; --crisis-bg:#3d2422; --crisis-line:#c0554b;
+  }
+}
+*{box-sizing:border-box}
+html{font-size:var(--fs)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+/* No animations anywhere: predictable and low-sensory by default. */
+*{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+a{color:var(--accent)}
+.wrap{max-width:46rem;margin:0 auto;padding:1rem}
+header{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+h1{font-size:1.4rem;margin:0}
+h2{font-size:1.15rem;margin:1.2rem 0 .4rem}
+.sub{color:var(--muted);margin:.1rem 0 0}
+.help{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:.5rem;padding:.5rem .75rem;margin:.5rem 0 1rem;font-size:.9rem}
+.status{font-size:.85rem;color:var(--muted)}
+.tabs{display:flex;flex-wrap:wrap;gap:.35rem;margin:.5rem 0 1rem}
+.tabs button{font:inherit;background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:.5rem;padding:.45rem .8rem;cursor:pointer}
+.tabs button[aria-selected="true"]{border-color:var(--accent);background:var(--card);font-weight:600}
+button:focus-visible,textarea:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:.7rem;padding:1rem;margin-bottom:1rem}
+label{display:block;font-weight:600;margin:.7rem 0 .25rem}
+textarea,select,input[type=text]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:.5rem;padding:.55rem}
+textarea{min-height:7rem;resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:.75rem}
+.row>div{flex:1 1 12rem}
+.primary{font:inherit;font-weight:600;background:var(--accent);color:var(--accent-ink);border:2px solid var(--accent);border-radius:.5rem;padding:.6rem 1rem;cursor:pointer;margin-top:.9rem}
+.secondary{font:inherit;background:transparent;color:var(--ink);border:2px solid var(--line);border-radius:.5rem;padding:.4rem .8rem;cursor:pointer}
+.danger{border-color:var(--crisis-line)}
+button[disabled]{opacity:.55;cursor:not-allowed}
+.out{white-space:pre-wrap;margin-top:1rem}
+.crisis{background:var(--crisis-bg);border:2px solid var(--crisis-line);border-radius:.6rem;padding:.8rem 1rem;white-space:pre-wrap;margin-top:1rem}
+.note{color:var(--muted);font-size:.9rem}
+.steps{list-style:none;margin:1rem 0 0;padding:0}
+.steps li{display:flex;gap:.6rem;align-items:flex-start;padding:.45rem 0;border-bottom:1px solid var(--line)}
+.steps input{width:1.3rem;height:1.3rem;margin-top:.25rem;flex:none}
+.steps li.done span{text-decoration:line-through;color:var(--muted)}
+.slider{margin:.6rem 0}
+.slider .ends{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{text-align:left;border-bottom:1px solid var(--line);padding:.3rem .4rem;vertical-align:top}
+.hidden{display:none}
+.ci{display:flex;justify-content:space-between;gap:.5rem;border-bottom:1px solid var(--line);padding:.5rem 0}
+.tools{display:flex;gap:.5rem;align-items:center}
+details{margin:.4rem 0}
+summary{cursor:pointer}
+pre{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:.4rem;padding:.5rem;font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Steady</h1>
+      <p class="sub">A small helper that runs on this computer. Nothing you write is sent anywhere else.</p>
+    </div>
+    <div class="tools">
+      <label for="fs" class="note" style="margin:0;font-weight:400">Text size</label>
+      <select id="fs" style="width:auto">
+        <option value="16px">Small</option><option value="18px" selected>Medium</option><option value="22px">Large</option><option value="26px">Extra large</option>
+      </select>
+      <label for="theme" class="note" style="margin:0;font-weight:400">Theme</label>
+      <select id="theme" style="width:auto">
+        <option value="auto">Match device</option><option value="light">Light</option><option value="dark">Dark</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="help" role="note">
+    In New Zealand, if you need to talk to someone now: call or text <strong>1737</strong> (free, 24/7). In an emergency call <strong>111</strong>.
+    Steady is a tool, not a clinician or a crisis service.
+  </div>
+  <p class="status" id="status" aria-live="polite">Checking for your local model…</p>
+
+  <div class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" aria-selected="true" data-tab="breakdown">Break it down</button>
+    <button role="tab" aria-selected="false" data-tab="plain">Say it plainly</button>
+    <button role="tab" aria-selected="false" data-tab="checkin">Check-in</button>
+    <button role="tab" aria-selected="false" data-tab="data">My data</button>
+  </div>
+
+  <!-- BREAK IT DOWN -->
+  <section id="tab-breakdown" class="card">
+    <h2 style="margin-top:0">What is on your plate?</h2>
+    <p class="note">Describe a task in your own words. Messy is fine. Steady turns it into small steps. Nothing is saved unless you choose to.</p>
+    <label for="bd-text">The task</label>
+    <textarea id="bd-text" placeholder="e.g. I need to sort out my WINZ paperwork and call the dentist and tidy the kitchen"></textarea>
+    <div class="row">
+      <div>
+        <label for="bd-energy">Energy right now</label>
+        <select id="bd-energy"><option value="low">Low</option><option value="ok" selected>OK</option><option value="high">Good</option></select>
+      </div>
+      <div>
+        <label for="bd-size">Step size</label>
+        <select id="bd-size"><option value="tiny">Tiny (fewer, smaller)</option><option value="normal" selected>Normal</option></select>
+      </div>
+    </div>
+    <button class="primary" id="bd-go">Break it down</button>
+    <div id="bd-out" aria-live="polite"></div>
+  </section>
+
+  <!-- SAY IT PLAINLY -->
+  <section id="tab-plain" class="card hidden">
+    <h2 style="margin-top:0">Say it plainly</h2>
+    <p class="note">Help writing a message, or understanding one. Steady can guess at what words might mean, but only the sender knows what they meant.</p>
+    <label for="pl-style">What do you want?</label>
+    <select id="pl-style">
+      <option value="clearer">Make my message clearer and more direct</option>
+      <option value="softer">Make my message gentler</option>
+      <option value="decode">Help me understand a message I received</option>
+    </select>
+    <label for="pl-text">Message</label>
+    <textarea id="pl-text"></textarea>
+    <button class="primary" id="pl-go">Go</button>
+    <div id="pl-out" aria-live="polite"></div>
+  </section>
+
+  <!-- CHECK-IN -->
+  <section id="tab-checkin" class="hidden">
+    <div class="card">
+      <h2 style="margin-top:0">Check-in</h2>
+      <p class="note">Optional. Saved only on this computer, only when you press Save. There are no streaks and no reminders.</p>
+      <div class="slider"><label for="ci-energy">Energy</label><input type="range" id="ci-energy" min="1" max="5" value="3"><div class="ends"><span>1 empty</span><span>5 full</span></div></div>
+      <div class="slider"><label for="ci-overwhelm">Overwhelm</label><input type="range" id="ci-overwhelm" min="1" max="5" value="3"><div class="ends"><span>1 calm</span><span>5 a lot</span></div></div>
+      <div class="slider"><label for="ci-sensory">Sensory load (noise, light, crowds, textures)</label><input type="range" id="ci-sensory" min="1" max="5" value="3"><div class="ends"><span>1 light</span><span>5 heavy</span></div></div>
+      <label for="ci-note">Note to yourself (optional)</label>
+      <textarea id="ci-note" style="min-height:4rem"></textarea>
+      <button class="primary" id="ci-save">Save to this computer</button>
+      <div id="ci-msg" aria-live="polite"></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Your last two weeks</h2>
+      <div id="insights" class="note">Loading…</div>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Saved check-ins</h2>
+      <div id="ci-list"></div>
+    </div>
+  </section>
+
+  <!-- MY DATA -->
+  <section id="tab-data" class="hidden">
+    <div class="card">
+      <h2 style="margin-top:0">Where your data is</h2>
+      <p id="d-where" class="note"></p>
+      <div class="tools">
+        <a class="secondary" id="d-export" href="/api/export" download="steady-export.json" style="text-decoration:none;color:var(--ink)">Download everything (JSON)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Everything Steady has sent out</h2>
+      <p class="note">Each row is a request Steady made. It should only ever list your own computer. If you see anything else, stop using it and tell someone.</p>
+      <div id="d-net"></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Exactly how Steady is told to behave</h2>
+      <p class="note">These are the real instructions given to the model. You can change them in <code>prompts.json</code>.</p>
+      <details><summary>Show the instructions</summary><pre id="d-prompts"></pre></details>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Delete everything</h2>
+      <p class="note">Removes all check-ins and the outbound log from this computer. This cannot be undone.</p>
+      <label for="d-confirm">Type DELETE to confirm</label>
+      <input type="text" id="d-confirm" autocomplete="off">
+      <button class="secondary danger" id="d-wipe" style="margin-top:.7rem">Delete everything</button>
+      <div id="d-msg" aria-live="polite"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const H = {"Content-Type":"application/json","X-Steady":"1"};
+const api = async (path, opts={}) => {
+  const r = await fetch(path, {headers:H, ...opts});
+  const j = await r.json().catch(()=>({error:"Something went wrong reading the reply."}));
+  return {ok:r.ok, ...j};
+};
+const el = (tag, text, cls) => { const e=document.createElement(tag); if(text!==undefined) e.textContent=text; if(cls) e.className=cls; return e; };
+
+// Preferences are kept in this browser only.
+try{
+  const fs=localStorage.getItem("fs"), th=localStorage.getItem("theme");
+  if(fs){ document.documentElement.style.setProperty("--fs",fs); $("#fs").value=fs; }
+  if(th && th!=="auto"){ document.documentElement.dataset.theme=th; $("#theme").value=th; }
+}catch(e){}
+$("#fs").onchange = e => { document.documentElement.style.setProperty("--fs", e.target.value); try{localStorage.setItem("fs",e.target.value)}catch(_){} };
+$("#theme").onchange = e => {
+  if(e.target.value==="auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme=e.target.value;
+  try{localStorage.setItem("theme",e.target.value)}catch(_){}
+};
+
+// Tabs
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x===b));
+  ["breakdown","plain","checkin","data"].forEach(t => $("#tab-"+t).classList.toggle("hidden", t!==b.dataset.tab));
+  if(b.dataset.tab==="checkin") loadCheckins();
+  if(b.dataset.tab==="data") loadData();
+});
+
+async function loadStatus(){
+  const s = await api("/api/status");
+  $("#status").textContent = s.model_ready
+    ? `Local model ready: ${s.model_name} (running on ${s.model_host}).`
+    : "No local model found. Break it down still works in a basic mode. Other tools need a model; see the README.";
+  return s;
+}
+
+function showResult(box, r){
+  box.replaceChildren();
+  if(r.error){ box.append(el("p", r.error, "note")); return; }
+  if(r.crisis){ box.append(el("div", r.text, "crisis")); return; }
+  if(r.note) box.append(el("p", r.note, "note"));
+  return r;
+}
+
+$("#bd-go").onclick = async () => {
+  const box = $("#bd-out"); const btn = $("#bd-go");
+  const text = $("#bd-text").value.trim(); if(!text){ box.replaceChildren(el("p","Write something first.","note")); return; }
+  btn.disabled = true; box.replaceChildren(el("p","Working on it. Small models can take a little while.","note"));
+  const r = await api("/api/assist",{method:"POST",body:JSON.stringify({mode:"breakdown",text,energy:$("#bd-energy").value,size:$("#bd-size").value})});
+  btn.disabled = false;
+  if(!showResult(box, r)) return;
+  const lines = r.text.split("\n").map(l=>l.trim()).filter(Boolean);
+  const ol = el("ul","","steps"); const extras = [];
+  lines.forEach(l => {
+    if(/^\d+[\.\)]\s*/.test(l)){
+      const li = el("li"); const cb = document.createElement("input"); cb.type="checkbox";
+      const sp = el("span", l.replace(/^\d+[\.\)]\s*/,""));
+      cb.onchange = () => li.classList.toggle("done", cb.checked);
+      li.append(cb, sp); ol.append(li);
+    } else extras.push(l);
+  });
+  box.append(ol);
+  extras.forEach(x => box.append(el("p", x, "note")));
+  const cp = el("button","Copy as text","secondary"); cp.style.marginTop=".7rem";
+  cp.onclick = () => navigator.clipboard.writeText(r.text).then(()=>cp.textContent="Copied");
+  box.append(cp);
+};
+
+$("#pl-go").onclick = async () => {
+  const box = $("#pl-out"); const btn = $("#pl-go");
+  const text = $("#pl-text").value.trim(); if(!text){ box.replaceChildren(el("p","Write or paste something first.","note")); return; }
+  btn.disabled = true; box.replaceChildren(el("p","Working on it.","note"));
+  const r = await api("/api/assist",{method:"POST",body:JSON.stringify({mode:"plain",style:$("#pl-style").value,text})});
+  btn.disabled = false;
+  if(!showResult(box, r)) return;
+  box.append(el("div", r.text, "out"));
+  const cp = el("button","Copy","secondary"); cp.style.marginTop=".7rem";
+  cp.onclick = () => navigator.clipboard.writeText(r.text).then(()=>cp.textContent="Copied");
+  box.append(cp);
+};
+
+$("#ci-save").onclick = async () => {
+  const box = $("#ci-msg");
+  const r = await api("/api/checkins",{method:"POST",body:JSON.stringify({
+    energy:+$("#ci-energy").value, overwhelm:+$("#ci-overwhelm").value, sensory:+$("#ci-sensory").value, note:$("#ci-note").value})});
+  box.replaceChildren();
+  if(r.crisis) box.append(el("div", r.text, "crisis"));
+  box.append(el("p", r.ok ? "Saved on this computer." : (r.error||"Could not save."), "note"));
+  if(r.ok){ $("#ci-note").value=""; loadCheckins(); }
+};
+
+async function loadCheckins(){
+  const [list, ins] = await Promise.all([api("/api/checkins"), api("/api/insights")]);
+  const box = $("#ci-list"); box.replaceChildren();
+  if(!list.checkins.length) box.append(el("p","Nothing saved yet.","note"));
+  list.checkins.forEach(c => {
+    const row = el("div","","ci"); const left = el("div");
+    left.append(el("strong", c.ts), el("div", `Energy ${c.energy} · Overwhelm ${c.overwhelm} · Sensory ${c.sensory}`, "note"));
+    if(c.note) left.append(el("div", c.note));
+    const del = el("button","Delete","secondary"); del.onclick = async () => { await api("/api/checkins/"+c.id,{method:"DELETE"}); loadCheckins(); };
+    row.append(left, del); box.append(row);
+  });
+  const ib = $("#insights"); ib.replaceChildren(el("p", ins.message, "note"));
+  if(ins.enough){
+    const t = document.createElement("table");
+    t.innerHTML = "<thead><tr><th>Measure</th><th>Latest 7</th><th>Before that</th></tr></thead>";
+    const tb = document.createElement("tbody");
+    [["energy","Energy"],["overwhelm","Overwhelm"],["sensory","Sensory load"]].forEach(([k,n]) => {
+      const tr = document.createElement("tr");
+      [n, ins.recent[k], ins.earlier[k] ?? "—"].forEach(v => tr.append(el("td", String(v))));
+      tb.append(tr);
+    });
+    t.append(tb); ib.append(t);
+  }
+}
+
+async function loadData(){
+  const s = await loadStatus();
+  $("#d-where").textContent = `Stored in a file on this computer: ${s.data_path}. Saved check-ins: ${s.checkin_count}. Model address: ${s.model_host}${s.allow_remote_model ? " (remote models are allowed in config)" : " (this computer only)"}.`;
+  const n = await api("/api/netlog"); const box = $("#d-net"); box.replaceChildren();
+  if(!n.netlog.length){ box.append(el("p","Nothing yet.","note")); }
+  else {
+    const t = document.createElement("table");
+    t.innerHTML = "<thead><tr><th>Time</th><th>To</th><th>Why</th><th>Bytes</th></tr></thead>";
+    const tb = document.createElement("tbody");
+    n.netlog.forEach(r => { const tr=document.createElement("tr"); [r.ts,r.host,r.purpose,r.bytes_sent].forEach(v=>tr.append(el("td",String(v)))); tb.append(tr); });
+    t.append(tb); box.append(t);
+  }
+  const p = await api("/api/prompts"); $("#d-prompts").textContent = JSON.stringify(p, null, 2);
+}
+
+$("#d-wipe").onclick = async () => {
+  const r = await api("/api/wipe",{method:"POST",body:JSON.stringify({confirm:$("#d-confirm").value})});
+  $("#d-msg").replaceChildren(el("p", r.ok ? "Everything was deleted from this computer." : (r.error||"Could not delete."), "note"));
+  if(r.ok){ $("#d-confirm").value=""; loadData(); }
+};
+
+loadStatus();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "port": 8787,
+  "model_url": "http://127.0.0.1:11434/v1",
+  "model_name": "llama3.2:3b",
+  "allow_remote_model": false,
+  "data_dir": "data",
+  "max_input_chars": 4000,
+  "temperature": 0.3,
+  "max_tokens": 500,
+  "request_timeout_seconds": 120
+}
